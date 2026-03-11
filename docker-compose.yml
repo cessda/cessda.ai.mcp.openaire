@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+version: '3.8'
+
+services:
+  mcp-openaire-http:
+    build:
+      context: .
+      dockerfile: Dockerfile.http
+    image: mcp-openaire-http:0.1.0
+    container_name: mcp-openaire-http
+    ports:
+      - "8001:8000"
+    environment:
+      # OpenAIRE API Configuration
+      - OPENAIRE_SCHOLEXPLORER_URL=${OPENAIRE_SCHOLEXPLORER_URL:-https://api.scholexplorer.openaire.eu/v3}
+      - OPENAIRE_GRAPH_URL=${OPENAIRE_GRAPH_URL:-https://api.openaire.eu/graph/v2}
+      - OPENAIRE_API_TIMEOUT=${OPENAIRE_API_TIMEOUT:-30}
+      - OPENAIRE_API_MAX_RETRIES=${OPENAIRE_API_MAX_RETRIES:-3}
+
+      # Logging Configuration
+      - OPENAIRE_LOG_LEVEL=${OPENAIRE_LOG_LEVEL:-INFO}
+
+      # Search Parameters
+      - OPENAIRE_DEFAULT_LIMIT=${OPENAIRE_DEFAULT_LIMIT:-200}
+      - OPENAIRE_MAX_LIMIT=${OPENAIRE_MAX_LIMIT:-1000}
+      - OPENAIRE_PAGE_SIZE=${OPENAIRE_PAGE_SIZE:-50}
+
+      # HTTP Server Configuration
+      - MCP_HOST=${MCP_HOST:-0.0.0.0}
+      - MCP_PORT=${MCP_PORT:-8000}
+
+    restart: unless-stopped
+
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    name: mcp-openaire-network

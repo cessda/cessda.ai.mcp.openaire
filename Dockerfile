@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Multi-stage build for optimal image size
+FROM python:3.12-slim AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install build dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy project files
+COPY pyproject.toml .
+COPY src/ src/
+
+# Build wheel
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels .
+
+# Final stage
+FROM python:3.12-slim
+
+# Set metadata labels
+LABEL maintainer="Alen Vodopijevec <alen@example.com>"
+LABEL description="MCP server for OpenAIRE research graph and ScholExplorer"
+LABEL version="0.1.0"
+
+# Create non-root user for security
+RUN groupadd -r mcp && useradd -r -g mcp mcp
+
+# Set working directory
+WORKDIR /app
+
+# Copy wheels from builder
+COPY --from=builder /app/wheels /wheels
+
+# Install application
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir /wheels/*.whl && \
+    rm -rf /wheels
+
+# Switch to non-root user
+USER mcp
+
+# Environment variables with defaults (can be overridden at runtime)
+ENV OPENAIRE_SCHOLEXPLORER_URL=https://api.scholexplorer.openaire.eu/v3 \
+    OPENAIRE_GRAPH_URL=https://api.openaire.eu/graph/v2 \
+    OPENAIRE_API_TIMEOUT=30 \
+    OPENAIRE_API_MAX_RETRIES=3 \
+    OPENAIRE_LOG_LEVEL=WARN \
+    OPENAIRE_DEFAULT_LIMIT=200 \
+    OPENAIRE_MAX_LIMIT=1000 \
+    OPENAIRE_PAGE_SIZE=50
+
+# Health check (runs simple Python import test)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import mcp_openaire; print('OK')" || exit 1
+
+# Run MCP server via STDIO
+ENTRYPOINT ["python", "-m", "mcp_openaire.server"]

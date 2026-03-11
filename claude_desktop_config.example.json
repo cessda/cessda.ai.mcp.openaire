@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "openaire": {
+      "command": "python",
+      "args": ["-m", "mcp_openaire.server"],
+      "env": {
+        "OPENAIRE_LOG_LEVEL": "INFO",
+        "OPENAIRE_DEFAULT_LIMIT": "200"
+      }
+    }
+  }
+}
