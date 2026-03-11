@@ -51,8 +51,8 @@ This MCP server provides AI assistants with access to two powerful research disc
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mcp-openaire.git
-cd mcp-openaire
+git clone https://github.com/cessda/cessda.ai.mcp.openaire.git
+cd cessda.ai.mcp.openaire
 
 # Install in development mode
 pip install -e .
@@ -192,8 +192,8 @@ Try these prompts in Claude Desktop:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/mcp-openaire.git
-cd mcp-openaire
+git clone https://github.com/cessda/cessda.ai.mcp.openaire.git
+cd cessda.ai.mcp.openaire
 
 # Install with development dependencies
 pip install -e ".[dev]"
@@ -334,7 +334,7 @@ Current version: **0.1.0**
 
 ## License
 
-Copyright © 2025 Alen Vodopijevec
+Copyright © 2025 CESSDA ERIC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
